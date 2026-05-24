@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	exprenc "github.com/Morwran/nft-go/internal/expr-encoders"
+	exprenc "github.com/PRO-Robotech/nft-go/internal/expr-encoders"
 
 	nftLib "github.com/google/nftables"
 	userdata "github.com/google/nftables/userdata"

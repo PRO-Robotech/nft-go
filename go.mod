@@ -1,6 +1,6 @@
-module github.com/Morwran/nft-go
+module github.com/PRO-Robotech/nft-go
 
-go 1.24.2
+go 1.25
 
 require (
 	github.com/ahmetb/go-linq/v3 v3.2.0

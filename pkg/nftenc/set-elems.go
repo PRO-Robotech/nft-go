@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	rb "github.com/Morwran/nft-go/internal/bytes"
+	rb "github.com/PRO-Robotech/nft-go/internal/bytes"
 
 	linq "github.com/ahmetb/go-linq/v3"
 	nftLib "github.com/google/nftables"

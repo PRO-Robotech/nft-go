@@ -1,11 +1,11 @@
-[![Go Reference](https://pkg.go.dev/badge/github.com/Morwran/nft-go.svg)](https://pkg.go.dev/github.com/Morwran/nft-go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Morwran/nft-go)](https://goreportcard.com/report/github.com/Morwran/nft-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/PRO-Robotech/nft-go.svg)](https://pkg.go.dev/github.com/PRO-Robotech/nft-go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/PRO-Robotech/nft-go)](https://goreportcard.com/report/github.com/PRO-Robotech/nft-go)
 
 ## nft-go
 #### The nftables client and libraries for representation of nftables structures in both JSON and a human-readable text format
 
 ### Installation
-    go install github.com/Morwran/nft-go
+    go install github.com/PRO-Robotech/nft-go
 
 ### Usage
     nft-go list help

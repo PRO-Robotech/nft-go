@@ -1,7 +1,7 @@
 package encoders
 
 import (
-	"github.com/Morwran/nft-go/internal/bytes"
+	"github.com/PRO-Robotech/nft-go/internal/bytes"
 
 	"github.com/google/nftables/expr"
 )

@@ -3,7 +3,7 @@ package encoders
 import (
 	"fmt"
 
-	pr "github.com/Morwran/nft-go/pkg/protocols"
+	pr "github.com/PRO-Robotech/nft-go/pkg/protocols"
 
 	nft "github.com/google/nftables"
 	"github.com/google/nftables/expr"

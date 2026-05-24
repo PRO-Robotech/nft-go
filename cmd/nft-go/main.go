@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Morwran/nft-go/internal/app/nft-go/cmd"
+	"github.com/PRO-Robotech/nft-go/internal/app/nft-go/cmd"
 )
 
 func main() {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	rb "github.com/Morwran/nft-go/internal/bytes"
+	rb "github.com/PRO-Robotech/nft-go/internal/bytes"
 
 	"github.com/google/nftables/expr"
 	"github.com/pkg/errors"

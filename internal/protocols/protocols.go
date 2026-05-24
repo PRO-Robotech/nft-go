@@ -4,7 +4,7 @@ import (
 	"math/bits"
 	"strings"
 
-	"github.com/Morwran/nft-go/internal/bytes"
+	"github.com/PRO-Robotech/nft-go/internal/bytes"
 
 	"github.com/google/nftables/expr"
 	"golang.org/x/sys/unix"

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Morwran/nft-go/pkg/nftenc"
+	"github.com/PRO-Robotech/nft-go/pkg/nftenc"
 
 	nftLib "github.com/google/nftables"
 	"github.com/pkg/errors"

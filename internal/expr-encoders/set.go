@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/H-BF/corlib/pkg/dict"
-	rb "github.com/Morwran/nft-go/internal/bytes"
+	rb "github.com/PRO-Robotech/nft-go/internal/bytes"
 	"github.com/google/nftables"
 )
 

@@ -5,7 +5,7 @@ import (
 	"math/big"
 	"regexp"
 
-	rb "github.com/Morwran/nft-go/internal/bytes"
+	rb "github.com/PRO-Robotech/nft-go/internal/bytes"
 	"github.com/google/nftables/expr"
 	"github.com/pkg/errors"
 	"golang.org/x/sys/unix"

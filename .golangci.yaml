@@ -245,7 +245,7 @@ formatters:
       custom-order: true
       sections:
         - standard                       # Standard section: captures all standard packages.
-        - prefix(github.com/Morwran/nft-go) # Custom section: groups all imports with the specified Prefix.
+        - prefix(github.com/PRO-Robotech/nft-go) # Custom section: groups all imports with the specified Prefix.
         - default                        # Default section: contains all imports that could not be matched to another section type.
   exclusions:
     paths:

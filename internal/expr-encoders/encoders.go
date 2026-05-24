@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	pr "github.com/Morwran/nft-go/pkg/protocols"
-  
+	pr "github.com/PRO-Robotech/nft-go/pkg/protocols"
+
 	"github.com/H-BF/corlib/pkg/atomic"
 	nft "github.com/google/nftables"
 	"github.com/google/nftables/expr"
