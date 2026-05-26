@@ -106,6 +106,43 @@ func Test_ByteEncoder(t *testing.T) {
 			},
 		},
 		{
+			name:     "ipv6 ::1 to ip String",
+			expected: "::1",
+			encode: func() any {
+				return RawBytes([]byte{
+					0, 0, 0, 0, 0, 0, 0, 0,
+					0, 0, 0, 0, 0, 0, 0, 1,
+				}).Ip().String()
+			},
+		},
+		{
+			name:     "ipv6 fe80::42:33ff:fe81:ecbe to ip String",
+			expected: "fe80::42:33ff:fe81:ecbe",
+			encode: func() any {
+				return RawBytes([]byte{
+					0xfe, 0x80, 0, 0, 0, 0, 0, 0,
+					0, 0x42, 0x33, 0xff, 0xfe, 0x81, 0xec, 0xbe,
+				}).Ip().String()
+			},
+		},
+		{
+			name:     "ipv6 full address to ip String",
+			expected: "2001:db8:85a3::8a2e:370:7334",
+			encode: func() any {
+				return RawBytes([]byte{
+					0x20, 0x01, 0x0d, 0xb8, 0x85, 0xa3, 0, 0,
+					0, 0, 0x8a, 0x2e, 0x03, 0x70, 0x73, 0x34,
+				}).Ip().String()
+			},
+		},
+		{
+			name:     "invalid length returns nil ip",
+			expected: "<nil>",
+			encode: func() any {
+				return RawBytes([]byte{1, 2, 3}).Ip().String()
+			},
+		},
+		{
 			name:     "to CIDR String",
 			expected: "10.0.0.0/8",
 			encode: func() any {

@@ -2,6 +2,8 @@ package encoders
 
 import (
 	"fmt"
+	"math/big"
+	"sort"
 	"strings"
 
 	"github.com/H-BF/corlib/pkg/dict"
@@ -27,18 +29,116 @@ func (s *setIR) Format() string {
 		return fmt.Sprintf("@%s", s.Name)
 	}
 
+	parts := s.elemStrings()
+
 	var b strings.Builder
 	b.WriteByte('{')
-
-	for i, e := range s.elems {
-		b.WriteString(s.keyToString(e.Key))
-		if i < len(s.elems)-1 {
+	for i, p := range parts {
+		if i > 0 {
 			b.WriteByte(',')
 		}
+		b.WriteString(p)
 	}
-
 	b.WriteByte('}')
 	return b.String()
+}
+
+func (s *setIR) elemStrings() []string {
+	if !s.Interval {
+		out := make([]string, 0, len(s.elems))
+		for _, e := range s.elems {
+			out = append(out, s.keyToString(e.Key))
+		}
+		return out
+	}
+
+	sorted := s.sortedElems()
+	switch s.KeyType {
+	case nftables.TypeIPAddr:
+		return intervalIPStrings(sorted, 32)
+	case nftables.TypeIP6Addr:
+		return intervalIPStrings(sorted, 128)
+	}
+
+	out := make([]string, 0, len(sorted))
+	for i := 0; i < len(sorted); i++ {
+		start := sorted[i]
+		if start.IntervalEnd {
+			continue
+		}
+		var end *nftables.SetElement
+		if i+1 < len(sorted) && sorted[i+1].IntervalEnd {
+			end = &sorted[i+1]
+			i++
+		}
+		out = append(out, s.formatIntervalKey(start.Key, end))
+	}
+	return out
+}
+
+func (s *setIR) sortedElems() []nftables.SetElement {
+	out := make([]nftables.SetElement, len(s.elems))
+	copy(out, s.elems)
+	sort.SliceStable(out, func(i, j int) bool {
+		return rb.RawBytes(out[i].Key).Uint64() < rb.RawBytes(out[j].Key).Uint64()
+	})
+	return out
+}
+
+func (s *setIR) formatIntervalKey(startKey []byte, end *nftables.SetElement) string {
+	startStr := s.keyToString(startKey)
+	if end == nil {
+		return startStr
+	}
+	endInt := new(big.Int).SetBytes(end.Key)
+	lastInt := new(big.Int).Sub(endInt, big.NewInt(1))
+	lastBytes := make([]byte, len(startKey))
+	lb := lastInt.Bytes()
+	copy(lastBytes[len(lastBytes)-len(lb):], lb)
+	return fmt.Sprintf("%s-%s", startStr, s.keyToString(lastBytes))
+}
+
+func intervalIPStrings(sorted []nftables.SetElement, bits int) []string {
+	out := make([]string, 0, len(sorted))
+	for i := 0; i < len(sorted); i++ {
+		start := sorted[i]
+		if start.IntervalEnd {
+			continue
+		}
+		var end *nftables.SetElement
+		if i+1 < len(sorted) && sorted[i+1].IntervalEnd {
+			end = &sorted[i+1]
+			i++
+		}
+		out = append(out, formatIPInterval(start.Key, end, bits))
+	}
+	return out
+}
+
+func formatIPInterval(startKey []byte, end *nftables.SetElement, bits int) string {
+	startIP := rb.RawBytes(startKey).Ip().String()
+	if end == nil {
+		return startIP
+	}
+
+	startInt := new(big.Int).SetBytes(startKey)
+	endInt := new(big.Int).SetBytes(end.Key)
+	size := new(big.Int).Sub(endInt, startInt)
+
+	if size.Sign() <= 0 || size.Cmp(big.NewInt(1)) == 0 {
+		return startIP
+	}
+
+	bitLen := size.BitLen() - 1
+	pow := new(big.Int).Lsh(big.NewInt(1), uint(bitLen))
+	if size.Cmp(pow) == 0 && new(big.Int).Mod(startInt, size).Sign() == 0 {
+		return fmt.Sprintf("%s/%d", startIP, bits-bitLen)
+	}
+
+	lastBytes := make([]byte, len(startKey))
+	last := new(big.Int).Sub(endInt, big.NewInt(1)).Bytes()
+	copy(lastBytes[len(lastBytes)-len(last):], last)
+	return fmt.Sprintf("%s-%s", startIP, rb.RawBytes(lastBytes).Ip().String())
 }
 
 func (s *setIR) keyToString(k []byte) string {

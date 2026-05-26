@@ -3,7 +3,6 @@ package bytes
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -58,16 +57,11 @@ func (b RawBytes) Text(base int) string {
 }
 
 func (b RawBytes) Ip() (ip net.IP) {
-	switch l := len(b); l {
-	case 4:
-		ip = make(net.IP, l)
-	case 16:
-		ip = make(net.IP, l)
+	switch len(b) {
+	case net.IPv4len, net.IPv6len:
+		ip = make(net.IP, len(b))
+		copy(ip, b)
 	}
-	if ip == nil {
-		return
-	}
-	binary.BigEndian.PutUint32(ip, uint32(b.Uint64())) //nolint:gosec
 	return ip
 }
 

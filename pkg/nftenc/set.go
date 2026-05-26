@@ -36,7 +36,7 @@ func (enc *SetEncoder) Format() (string, error) {
 	sb := strings.Builder{}
 	s := enc.set
 	if s.Anonymous {
-		return "", ErrSetIsAnonymous
+		return "", nil
 	}
 
 	sb.WriteString(fmt.Sprintf("set %s {\n\t\ttype %s\n\t\tflags %s\n\t\telements = { ",
@@ -53,6 +53,9 @@ func (enc *SetEncoder) Format() (string, error) {
 }
 
 func (enc *SetEncoder) MarshalJSON() ([]byte, error) {
+	if enc.set.Anonymous {
+		return nil, nil
+	}
 	set := struct {
 		Family   string   `json:"family"`
 		Name     string   `json:"name"`
@@ -68,13 +71,8 @@ func (enc *SetEncoder) MarshalJSON() ([]byte, error) {
 		Flags:    enc.FlagsToStringLinst(),
 		Elements: enc.elemsEnc,
 	}
-	root := map[string]any{
-		"set": set,
-	}
-	if enc.set.Anonymous {
-		return nil, ErrSetIsAnonymous
-	}
-	return json.Marshal(root)
+
+	return json.Marshal(map[string]any{"set": set})
 }
 
 func (enc *SetEncoder) FlagsToStringLinst() (flags []string) {
@@ -105,5 +103,3 @@ func (enc *SetEncoder) FlagsToStringLinst() (flags []string) {
 
 	return flags
 }
-
-var ErrSetIsAnonymous = fmt.Errorf("set is anonymous")

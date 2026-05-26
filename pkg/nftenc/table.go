@@ -115,7 +115,9 @@ func (enc *TableEncoder) MarshalJSON() ([]byte, error) {
 				if e != nil {
 					return e
 				}
-				out = append(out, itemJson)
+				if len(itemJson) > 0 {
+					out = append(out, itemJson)
+				}
 				if ch, ok := item.(*ChainEncoder); ok {
 					var ruleJson []byte
 					for _, rule := range ch.rules {
@@ -162,6 +164,9 @@ func (enc *TableEncoder) formatItems(items ...Encoder) (string, error) {
 		itemStr, err := item.Format()
 		if err != nil {
 			return "", err
+		}
+		if itemStr == "" {
+			continue
 		}
 		sb.WriteByte('\t')
 		sb.WriteString(itemStr)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/PRO-Robotech/nft-go/pkg/nftenc"
+	"github.com/PRO-Robotech/nft-go/pkg/nftlist"
 
 	nftLib "github.com/google/nftables"
 	"github.com/pkg/errors"
@@ -28,24 +29,17 @@ func newTablesCommand() *cobra.Command {
 }
 
 func listTables(conn *nftLib.Conn, fn func(*nftLib.Table) ([]nftenc.Encoder, error)) error {
-	tables, err := conn.ListTables()
+	encs, err := nftlist.TablesEncodersFunc(conn, fn)
 	if err != nil {
-		return errors.WithMessage(err, "failed to obtain list of tables from the netfilter")
+		return err
 	}
-
-	for _, table := range tables {
-		var encs []nftenc.Encoder
-		if fn != nil {
-			encs, err = fn(table)
-		}
-		if err != nil {
-			return err
-		}
-		tblTxt, err := nftenc.NewTableEncoder(table, encs...).Format()
+	for _, enc := range encs {
+		tblTxt, err := enc.Format()
 		if err != nil {
 			return err
 		}
 		fmt.Println(tblTxt)
 	}
+
 	return nil
 }

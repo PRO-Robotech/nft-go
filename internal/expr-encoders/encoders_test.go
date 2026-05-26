@@ -44,7 +44,7 @@ func (sui *encodersTestSuite) Test_MultipleExprToString() {
 					},
 				},
 			},
-			expected: "meta l4proto tcp counter packets 0 bytes 0 log accept",
+			expected: "counter packets 0 bytes 0 log accept",
 		},
 		{
 			name: "Expression 3",
@@ -192,7 +192,7 @@ func (sui *encodersTestSuite) Test_MultipleExprToString() {
 					},
 				},
 			},
-			expected: "ip daddr != 93.184.216.34 meta l4proto tcp dport {80,443} meta l4proto tcp",
+			expected: "ip daddr != 93.184.216.34 tcp dport {80,443}",
 		},
 		{
 			name: "Expression 7",
@@ -237,7 +237,7 @@ func (sui *encodersTestSuite) Test_MultipleExprToString() {
 					},
 				},
 			},
-			expected: "meta l4proto tcp dport != 80",
+			expected: "tcp dport != 80",
 		},
 		{
 			name: "Expression 9",
@@ -267,7 +267,7 @@ func (sui *encodersTestSuite) Test_MultipleExprToString() {
 					},
 				},
 			},
-			expected: "meta l4proto tcp sport >= 80 sport <= 100",
+			expected: "tcp sport 80-100",
 		},
 
 		{
@@ -294,7 +294,7 @@ func (sui *encodersTestSuite) Test_MultipleExprToString() {
 					},
 				},
 			},
-			expected: "meta nftrace set 1 ip daddr 10.0.0.0/8 meta l4proto udp",
+			expected: "meta nftrace set 1 ip daddr 10.0.0.0/8",
 		},
 
 		{
@@ -319,7 +319,7 @@ func (sui *encodersTestSuite) Test_MultipleExprToString() {
 					},
 				},
 			},
-			expected: "meta l4proto icmp type echo-reply",
+			expected: "icmp type echo-reply",
 		},
 
 		{
@@ -403,6 +403,55 @@ func (sui *encodersTestSuite) Test_MultipleExprToString() {
 				},
 			},
 			expected: "ct protocol tcp",
+		},
+		{
+			name: "Expression 16",
+			preRun: func() {
+				var set setCache
+				table := nftables.Table{Name: tableName}
+				set.Put(
+					setKey{
+						tableName: table.Name,
+						setName:   "__set1",
+					},
+					setEntry{
+						Set: nftables.Set{
+							Table:     &table,
+							Name:      "__set1",
+							Anonymous: true,
+							Constant:  true,
+							Interval:  true,
+							KeyType:   nftables.TypeIPAddr,
+						},
+						elems: []nftables.SetElement{
+							{
+								Key: []byte(net.ParseIP("10.0.0.0").To4()),
+							},
+							{
+								Key:         []byte(net.ParseIP("11.0.0.0").To4()),
+								IntervalEnd: true,
+							},
+						},
+					},
+				)
+				setsHolder.Store(set, nil)
+			},
+			exprs: nftables.Rule{
+				Table: &nftables.Table{Name: tableName},
+				Exprs: []expr.Any{
+					&expr.Payload{
+						DestRegister: 1,
+						Base:         expr.PayloadBaseNetworkHeader,
+						Offset:       16,
+						Len:          4,
+					},
+					&expr.Lookup{
+						SourceRegister: 1,
+						SetName:        "__set1",
+					},
+				},
+			},
+			expected: "ip daddr {10.0.0.0/8}",
 		},
 	}
 	for _, t := range testData {

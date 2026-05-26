@@ -3,6 +3,7 @@ package nftenc
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"strings"
 
 	rb "github.com/PRO-Robotech/nft-go/internal/bytes"
@@ -13,8 +14,9 @@ import (
 
 type (
 	SetElemsEncoder struct {
-		SetType nftLib.SetDatatype
-		Elems   SetElems
+		SetType  nftLib.SetDatatype
+		Interval bool
+		Elems    SetElems
 	}
 
 	SetElement nftLib.SetElement
@@ -23,14 +25,15 @@ type (
 
 var _ Encoder = (*SetElemsEncoder)(nil)
 
-func NewSetElemsEncoder(setType nftLib.SetDatatype, elems []nftLib.SetElement) *SetElemsEncoder {
+func NewSetElemsEncoder(setType nftLib.SetDatatype, interval bool, elems []nftLib.SetElement) *SetElemsEncoder {
 	s := make(SetElems, len(elems))
 	for i := range elems {
 		s[i] = SetElement(elems[i])
 	}
 	return &SetElemsEncoder{
-		SetType: setType,
-		Elems:   s,
+		SetType:  setType,
+		Interval: interval,
+		Elems:    s,
 	}
 }
 
@@ -48,14 +51,66 @@ func (enc *SetElemsEncoder) MustString() string {
 }
 
 func (enc *SetElemsEncoder) Format() (string, error) {
-	elems := enc.Elems.ToStringListOrderedByType(enc.SetType)
-	return strings.Join(elems, ", "), nil
+	return strings.Join(enc.toStringList(), ", "), nil
 }
 
 func (enc *SetElemsEncoder) MarshalJSON() ([]byte, error) {
-	elems := enc.Elems.ToStringListOrderedByType(enc.SetType)
+	return json.Marshal(enc.toStringList())
+}
 
-	return json.Marshal(elems)
+func (enc *SetElemsEncoder) toStringList() []string {
+	if enc.Interval && (enc.SetType == nftLib.TypeIPAddr || enc.SetType == nftLib.TypeIP6Addr) {
+		return enc.Elems.toIPIntervalStrings(enc.SetType)
+	}
+	return enc.Elems.ToStringListOrderedByType(enc.SetType)
+}
+
+func (s SetElems) toIPIntervalStrings(typ nftLib.SetDatatype) []string {
+	bits := 32
+	if typ == nftLib.TypeIP6Addr {
+		bits = 128
+	}
+	sorted := s.SortAs(typ)
+	out := make([]string, 0, len(sorted))
+	for i := 0; i < len(sorted); i++ {
+		start := sorted[i]
+		if start.IntervalEnd {
+			continue
+		}
+		var end *SetElement
+		if i+1 < len(sorted) && sorted[i+1].IntervalEnd {
+			end = &sorted[i+1]
+			i++
+		}
+		out = append(out, formatIPInterval(start.Key, end, bits))
+	}
+	return out
+}
+
+func formatIPInterval(startKey []byte, end *SetElement, bits int) string {
+	startIP := rb.RawBytes(startKey).Ip().String()
+	if end == nil {
+		return startIP
+	}
+
+	startInt := new(big.Int).SetBytes(startKey)
+	endInt := new(big.Int).SetBytes(end.Key)
+	size := new(big.Int).Sub(endInt, startInt)
+
+	if size.Sign() <= 0 || size.Cmp(big.NewInt(1)) == 0 {
+		return startIP
+	}
+
+	bitLen := size.BitLen() - 1
+	pow := new(big.Int).Lsh(big.NewInt(1), uint(bitLen))
+	if size.Cmp(pow) == 0 && new(big.Int).Mod(startInt, size).Sign() == 0 {
+		return fmt.Sprintf("%s/%d", startIP, bits-bitLen)
+	}
+
+	lastBytes := make([]byte, len(startKey))
+	last := new(big.Int).Sub(endInt, big.NewInt(1)).Bytes()
+	copy(lastBytes[len(lastBytes)-len(last):], last)
+	return fmt.Sprintf("%s-%s", startIP, rb.RawBytes(lastBytes).Ip().String())
 }
 
 func (s SetElems) ToStringListOrderedByType(setType nftLib.SetDatatype) []string {
@@ -128,7 +183,6 @@ func (s SetElementTypeString) String() string {
 }
 
 func (s SetElementTypeIp) String() string {
-	rb.RawBytes(s.Key).Uint64()
 	return rb.RawBytes(s.Key).Ip().String()
 }
 

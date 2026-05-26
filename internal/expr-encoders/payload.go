@@ -69,7 +69,7 @@ func (b *payloadEncoder) EncodeJSON(ctx *ctx) ([]byte, error) {
 // @base,offset,len notation understood by nft.
 func (b *payloadEncoder) buildKey(ctx *ctx) string {
 	offset := pr.HeaderOffset(b.payload.Offset).BytesToBits()
-	if hdr, ok := b.resolveHeader(offset, ctx, includeHeaderIfKnown(ctx)); ok {
+	if hdr, ok := b.resolveHeader(offset, ctx, includeHeaderIfKnown(ctx, b.payload.Base)); ok {
 		return hdr
 	}
 	return fmt.Sprintf("@%s,%d,%d", PayloadBase(b.payload.Base), b.payload.Offset, b.payload.Len)
@@ -124,7 +124,7 @@ func (b *payloadEncoder) resolveHeader(offset pr.HeaderOffset, ctx *ctx, include
 		if desc, ok := hdr.Offsets[offset]; ok {
 			hdr.CurrentOffset = offset
 			if includeHeader == addHeaderName ||
-				hdr.Id == unix.IPPROTO_IP || hdr.Id == unix.IPPROTO_NONE {
+				hdr.Id == unix.IPPROTO_IP || hdr.Id == unix.IPPROTO_IPV6 || hdr.Id == unix.IPPROTO_NONE {
 				return fmt.Sprintf("%s %s", hdr.Name, desc.Name), true
 			}
 			return desc.Name, true
@@ -155,7 +155,7 @@ func (b *payloadEncoder) resolveHeader(offset pr.HeaderOffset, ctx *ctx, include
 
 func (b *payloadEncoder) buildLRFromCmpData(ctx *ctx, cmp *expr.Cmp) (left, right string) {
 	offset := pr.HeaderOffset(b.payload.Offset).BytesToBits()
-	left, _ = b.resolveHeader(offset, ctx, includeHeaderIfKnown(ctx))
+	left, _ = b.resolveHeader(offset, ctx, includeHeaderIfKnown(ctx, b.payload.Base))
 
 	// pretty‑print RHS when we have metadata
 	if *ctx.hdr != nil {
@@ -209,7 +209,12 @@ const (
 	omitHeaderIfCurrent includeHeaderFlag = false // drop prefix if we’re already inside
 )
 
-func includeHeaderIfKnown(ctx *ctx) includeHeaderFlag {
+func includeHeaderIfKnown(ctx *ctx, base expr.PayloadBase) includeHeaderFlag {
+	// nft always prefixes transport-layer fields (e.g. `tcp dport`, `icmp type`),
+	// even when an implicit l4proto check has been hidden from the listing.
+	if base == expr.PayloadBaseTransportHeader {
+		return addHeaderName
+	}
 	if *ctx.hdr != nil {
 		return omitHeaderIfCurrent
 	}

@@ -3,6 +3,7 @@ package nftenc
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	nftLib "github.com/google/nftables"
@@ -85,14 +86,20 @@ func (enc *ChainEncoder) MarshalJSON() ([]byte, error) {
 		Priority string           `json:"priority,omitempty"`
 		Policy   string           `json:"policy,omitempty"`
 	}{
-		Family:   TableFamily(enc.chain.Table.Family).String(),
-		Table:    enc.chain.Table.Name,
-		Handle:   enc.chain.Handle,
-		Name:     enc.chain.Name,
-		Type:     enc.chain.Type,
-		Hook:     ChainHook(*enc.chain.Hooknum).String(),
-		Priority: ChainPriority(*enc.chain.Priority).String(),
-		Policy:   ChainPolicy(*enc.chain.Policy).String(),
+		Family: TableFamily(enc.chain.Table.Family).String(),
+		Table:  enc.chain.Table.Name,
+		Handle: enc.chain.Handle,
+		Name:   enc.chain.Name,
+		Type:   enc.chain.Type,
+	}
+	if enc.chain.Hooknum != nil {
+		chain.Hook = ChainHook(*enc.chain.Hooknum).String()
+	}
+	if enc.chain.Priority != nil {
+		chain.Priority = ChainPriority(*enc.chain.Priority).String()
+	}
+	if enc.chain.Policy != nil {
+		chain.Policy = ChainPolicy(*enc.chain.Policy).String()
 	}
 
 	return json.Marshal(map[string]any{"chain": chain})
@@ -117,37 +124,7 @@ func (c ChainHook) String() string {
 }
 
 func (c ChainPriority) String() string {
-	switch nftLib.ChainPriority(c) {
-	case *nftLib.ChainPriorityFirst:
-		return "first"
-	case *nftLib.ChainPriorityConntrackDefrag:
-		return "conntrack-defrag"
-	case *nftLib.ChainPriorityRaw:
-		return "raw"
-	case *nftLib.ChainPrioritySELinuxFirst:
-		return "se-linux-first"
-	case *nftLib.ChainPriorityConntrack:
-		return "conntrack"
-	case *nftLib.ChainPriorityMangle:
-		return "mangle"
-	case *nftLib.ChainPriorityNATDest:
-		return "natd"
-	case *nftLib.ChainPriorityFilter:
-		return "filter"
-	case *nftLib.ChainPrioritySecurity:
-		return "security"
-	case *nftLib.ChainPriorityNATSource:
-		return "nats"
-	case *nftLib.ChainPrioritySELinuxLast:
-		return "se-linux-last"
-	case *nftLib.ChainPriorityConntrackHelper:
-		return "conntrack-helper"
-	case *nftLib.ChainPriorityConntrackConfirm:
-		return "conntrack-confirm"
-	case *nftLib.ChainPriorityLast:
-		return "last"
-	}
-	return "unknown"
+	return strconv.FormatInt(int64(int32(c)), 10)
 }
 
 func (p ChainPolicy) String() string {

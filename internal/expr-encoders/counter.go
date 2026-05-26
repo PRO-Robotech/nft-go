@@ -17,7 +17,7 @@ type counterEncoder struct {
 }
 
 func (b *counterEncoder) EncodeIR(ctx *ctx) (irNode, error) {
-	return simpleIR("counter packets 0 bytes 0"), nil
+	return simpleIR(fmt.Sprintf("counter packets %d bytes %d", b.counter.Packets, b.counter.Bytes)), nil
 }
 
 func (b *counterEncoder) EncodeJSON(ctx *ctx) ([]byte, error) {

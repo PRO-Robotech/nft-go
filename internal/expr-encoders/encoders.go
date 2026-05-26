@@ -65,6 +65,7 @@ func (r *RuleExprEncoder) Format() (string, error) {
 			nodes = append(nodes, n)
 		}
 	}
+	nodes = mergeRangeCmps(nodes)
 	var sb strings.Builder
 	for i, n := range nodes {
 		l, _ := sb.WriteString(n.Format())
@@ -73,6 +74,25 @@ func (r *RuleExprEncoder) Format() (string, error) {
 		}
 	}
 	return sb.String(), nil
+}
+
+// mergeRangeCmps collapses adjacent `key >= X` / `key <= Y` comparisons on the
+// same payload key into a single `key X-Y` range expression, matching nft.
+func mergeRangeCmps(in []irNode) []irNode {
+	out := make([]irNode, 0, len(in))
+	for i := 0; i < len(in); i++ {
+		if i+1 < len(in) {
+			a, aok := in[i].(cmpIR)
+			b, bok := in[i+1].(cmpIR)
+			if aok && bok && a.L == b.L && a.Op == ">=" && b.Op == "<=" {
+				out = append(out, cmpIR{L: a.L, R: a.R + "-" + b.R})
+				i++
+				continue
+			}
+		}
+		out = append(out, in[i])
+	}
+	return out
 }
 
 // MarshalJSON — convert nftables rule to json format

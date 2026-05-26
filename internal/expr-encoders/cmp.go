@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	rb "github.com/PRO-Robotech/nft-go/internal/bytes"
+	pr "github.com/PRO-Robotech/nft-go/pkg/protocols"
 
 	"github.com/google/nftables/expr"
 	"github.com/pkg/errors"
@@ -31,6 +32,22 @@ func (b *cmpEncoder) EncodeIR(ctx *ctx) (irNode, error) {
 	if !ok {
 		return nil, errors.Errorf("%T expression has no left hand side", cmp)
 	}
+
+	// Implicit dependency checks inserted by the kernel (e.g. `meta nfproto ipv4`
+	// in front of `ip saddr` for inet tables, or `meta l4proto tcp` in front of
+	// `tcp dport`). nft hides them on listing; do the same, but keep the header
+	// context so the following payload expression resolves.
+	if m, ok := srcReg.Expr.(*expr.Meta); ok && cmp.Op == expr.CmpOpEq {
+		switch m.Key {
+		case expr.MetaKeyNFPROTO:
+			setNFProtoHeader(ctx, cmp.Data)
+			return nil, ErrNoIR
+		case expr.MetaKeyL4PROTO, expr.MetaKeyPROTOCOL:
+			setL4ProtoHeader(ctx, cmp.Data)
+			return nil, ErrNoIR
+		}
+	}
+
 	left := srcReg.HumanExpr
 	right := ""
 	l, r := b.formatCmpLR(ctx, srcReg)
@@ -140,4 +157,31 @@ func (c CmpOp) String() string {
 		return ">="
 	}
 	return ""
+}
+
+func setNFProtoHeader(ctx *ctx, data []byte) {
+	if len(data) == 0 || ctx.hdr == nil {
+		return
+	}
+	var key int
+	switch data[0] {
+	case unix.NFPROTO_IPV4:
+		key = unix.IPPROTO_IP
+	case unix.NFPROTO_IPV6:
+		key = unix.IPPROTO_IPV6
+	default:
+		return
+	}
+	if proto, ok := pr.Protocols[expr.PayloadBaseNetworkHeader][pr.ProtoType(key)]; ok {
+		*ctx.hdr = &proto
+	}
+}
+
+func setL4ProtoHeader(ctx *ctx, data []byte) {
+	if len(data) == 0 || ctx.hdr == nil {
+		return
+	}
+	if proto, ok := pr.Protocols[expr.PayloadBaseTransportHeader][pr.ProtoType(data[0])]; ok {
+		*ctx.hdr = &proto
+	}
 }
