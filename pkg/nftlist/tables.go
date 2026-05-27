@@ -30,6 +30,15 @@ func Tables(opts ...listOpt) (ret TablesOutput, err error) {
 		return ret, err
 	}
 
+	return TablesFromEncoders(encs, opts...)
+}
+
+// TablesFromEncoders -
+func TablesFromEncoders(encs []*nftenc.TableEncoder, opts ...listOpt) (ret TablesOutput, err error) {
+	var cfg listOpts
+	for _, opt := range opts {
+		opt.apply(&cfg)
+	}
 	var text strings.Builder
 	jsonParts := make([]string, 0, len(encs))
 
