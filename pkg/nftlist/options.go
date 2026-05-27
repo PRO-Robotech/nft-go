@@ -4,6 +4,7 @@ type (
 	listOpts struct {
 		noTextOut bool
 		noJSONOut bool
+		noRawOut  bool
 	}
 	listOpt interface {
 		apply(*listOpts)
@@ -28,5 +29,12 @@ func WithoutTextOutput() listOpt {
 func WithoutJSONOutput() listOpt {
 	return optFunc(func(opts *listOpts) {
 		opts.noJSONOut = true
+	})
+}
+
+// WithoutRawOutput -
+func WithoutRawOutput() listOpt {
+	return optFunc(func(opts *listOpts) {
+		opts.noRawOut = true
 	})
 }

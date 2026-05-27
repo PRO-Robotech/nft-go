@@ -102,7 +102,7 @@ func formatIPInterval(startKey []byte, end *SetElement, bits int) string {
 	}
 
 	bitLen := size.BitLen() - 1
-	pow := new(big.Int).Lsh(big.NewInt(1), uint(bitLen))
+	pow := new(big.Int).Lsh(big.NewInt(1), uint(bitLen)) //nolint:gosec
 	if size.Cmp(pow) == 0 && new(big.Int).Mod(startInt, size).Sign() == 0 {
 		return fmt.Sprintf("%s/%d", startIP, bits-bitLen)
 	}

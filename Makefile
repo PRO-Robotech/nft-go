@@ -25,18 +25,18 @@ help: ##display this help
 
 GOLANGCI_BIN:=$(GOBIN)/golangci-lint
 GOLANGCI_REPO=https://github.com/golangci/golangci-lint
-GOLANGCI_LATEST_VERSION:= $(shell git ls-remote --tags --refs --sort='v:refname' $(GOLANGCI_REPO)|tail -1|egrep -o "v[0-9]+.*")
+GOLANGCI_VERSION:=v2.11.4
 ifneq ($(wildcard $(GOLANGCI_BIN)),)
-	GOLANGCI_CUR_VERSION=v$(shell $(GOLANGCI_BIN) --version|sed -E 's/.*version (.*) built.*/\1/g')	
+	GOLANGCI_CUR_VERSION=$(strip v$(shell $(GOLANGCI_BIN) --version|sed -E 's/.*version (.*) built.*/\1/g'))
 else
 	GOLANGCI_CUR_VERSION=
 endif
 
 .PHONY: .install-linter
 .install-linter:
-ifeq ($(filter $(GOLANGCI_CUR_VERSION), $(GOLANGCI_LATEST_VERSION)),)
-	$(info Installing GOLANGCI-LINT $(GOLANGCI_LATEST_VERSION)...)
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOBIN) $(GOLANGCI_LATEST_VERSION)
+ifneq ($(GOLANGCI_CUR_VERSION), $(GOLANGCI_VERSION))
+	$(info Installing GOLANGCI-LINT $(GOLANGCI_VERSION)...)
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOBIN) $(GOLANGCI_VERSION)
 	@chmod +x $(GOLANGCI_BIN)
 else
 	@echo 1 >/dev/null

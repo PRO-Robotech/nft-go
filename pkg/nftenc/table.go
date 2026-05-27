@@ -155,6 +155,18 @@ func (enc *TableEncoder) ItemsToMap() map[string][]Encoder {
 	return m
 }
 
+func (enc *TableEncoder) Value() *nftLib.Table {
+	return enc.table
+}
+
+func (enc *TableEncoder) Items() []Encoder {
+	return enc.items
+}
+
+func (enc *TableEncoder) Raw() RawTable {
+	return extractRawFromEncoder(enc)
+}
+
 func (enc *TableEncoder) formatItems(items ...Encoder) (string, error) {
 	sb := strings.Builder{}
 	for _, item := range items {

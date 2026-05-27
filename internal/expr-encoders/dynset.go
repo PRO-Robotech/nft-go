@@ -48,7 +48,7 @@ func (b *dynsetEncoder) EncodeIR(ctx *ctx) (irNode, error) {
 	}
 
 	if dyn.Timeout != 0 {
-		sb.WriteString(fmt.Sprintf(" timeout %s", dyn.Timeout))
+		sb.WriteString(fmt.Sprintf(" timeout %s", dyn.Timeout)) //nolint
 	}
 
 	if sb.Len() > 0 {
@@ -57,7 +57,7 @@ func (b *dynsetEncoder) EncodeIR(ctx *ctx) (irNode, error) {
 	sb.Reset()
 	setName := fmt.Sprintf(`@%s`, dyn.SetName)
 
-	sb.WriteString(fmt.Sprintf("%s %s { %s ", DynSetOP(dyn.Operation), setName, exp))
+	sb.WriteString(fmt.Sprintf("%s %s { %s ", DynSetOP(dyn.Operation), setName, exp)) //nolint
 	if str != "" {
 		sb.WriteString(str)
 		sb.WriteByte(' ')
@@ -67,7 +67,7 @@ func (b *dynsetEncoder) EncodeIR(ctx *ctx) (irNode, error) {
 
 	if ok {
 		if exprData := srcRegData.HumanExpr; exprData != "" {
-			sb.WriteString(fmt.Sprintf(": %s ", exprData))
+			sb.WriteString(fmt.Sprintf(": %s ", exprData)) //nolint
 		}
 	}
 

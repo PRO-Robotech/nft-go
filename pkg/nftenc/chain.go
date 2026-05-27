@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	nftLib "github.com/google/nftables"
+	"github.com/samber/lo"
 )
 
 type (
@@ -103,6 +104,14 @@ func (enc *ChainEncoder) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(map[string]any{"chain": chain})
+}
+
+func (enc *ChainEncoder) Value() *nftLib.Chain {
+	return enc.chain
+}
+
+func (enc *ChainEncoder) Items() []*nftLib.Rule {
+	return lo.Map(enc.rules, func(r *RuleEncoder, _ int) *nftLib.Rule { return r.rule })
 }
 
 func (c ChainHook) String() string {

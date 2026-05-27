@@ -32,12 +32,12 @@ func (l *limitIR) Format() string {
 	}
 	sb := strings.Builder{}
 	rateVal, rateUnit := rate(l.Rate).Rate()
-	sb.WriteString(fmt.Sprintf("limit rate %s %d/%s/%s",
+	sb.WriteString(fmt.Sprintf("limit rate %s %d/%s/%s", //nolint
 		map[bool]string{true: "over", false: ""}[l.Over],
 		rateVal, rateUnit, LimitTime(l.Unit)))
 	if l.Burst != 0 {
 		burst, burstUnit := rate(uint64(l.Burst)).Rate()
-		sb.WriteString(fmt.Sprintf(" burst %d %s", burst, burstUnit))
+		sb.WriteString(fmt.Sprintf(" burst %d %s", burst, burstUnit)) //nolint
 	}
 	return sb.String()
 }

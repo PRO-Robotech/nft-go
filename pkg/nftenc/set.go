@@ -103,3 +103,14 @@ func (enc *SetEncoder) FlagsToStringLinst() (flags []string) {
 
 	return flags
 }
+
+func (enc *SetEncoder) Value() *nftLib.Set {
+	return enc.set
+}
+
+func (enc *SetEncoder) Items() []SetElement {
+	if enc.elemsEnc == nil {
+		return nil
+	}
+	return enc.elemsEnc.Elems
+}

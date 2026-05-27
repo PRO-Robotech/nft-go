@@ -30,11 +30,11 @@ func (b *hashEncoder) EncodeIR(ctx *ctx) (irNode, error) {
 		}
 		exp = srcReg.HumanExpr
 
-		sb.WriteString(fmt.Sprintf("jhash %s", exp))
+		sb.WriteString(fmt.Sprintf("jhash %s", exp)) //nolint
 	}
-	sb.WriteString(fmt.Sprintf(" mod %d seed 0x%x", hash.Modulus, hash.Seed))
+	sb.WriteString(fmt.Sprintf(" mod %d seed 0x%x", hash.Modulus, hash.Seed)) //nolint
 	if hash.Offset > 0 {
-		sb.WriteString(fmt.Sprintf(" offset %d", hash.Offset))
+		sb.WriteString(fmt.Sprintf(" offset %d", hash.Offset)) //nolint
 	}
 
 	if hash.DestRegister == 0 {

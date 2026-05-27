@@ -45,7 +45,7 @@ type (
 )
 
 func (nbytes HeaderOffset) BytesToBits() HeaderOffset {
-	return HeaderOffset(byte(nbytes) * BitsPerByte)
+	return HeaderOffset(byte(nbytes) * BitsPerByte) //nolint:gosec
 }
 
 func (offset HeaderOffset) WithBitMask(mask uint32) HeaderOffset {

@@ -14,6 +14,7 @@ type (
 	TablesOutput struct {
 		Text string
 		JSON string
+		Raw  []nftenc.RawTable
 	}
 )
 
@@ -33,6 +34,9 @@ func Tables(opts ...listOpt) (ret TablesOutput, err error) {
 	jsonParts := make([]string, 0, len(encs))
 
 	for _, enc := range encs {
+		if !cfg.noRawOut {
+			ret.Raw = append(ret.Raw, enc.Raw())
+		}
 		if !cfg.noTextOut {
 			tblText, err := enc.Format()
 			if err != nil {

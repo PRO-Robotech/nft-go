@@ -31,7 +31,7 @@ func (b *dupEncoder) EncodeIR(ctx *ctx) (irNode, error) {
 		}
 		addr = srcRegAddr.HumanExpr
 		if addr != "" {
-			sb.WriteString(fmt.Sprintf(" to %s", addr))
+			sb.WriteString(fmt.Sprintf(" to %s", addr)) //nolint
 		}
 	}
 	if dup.RegDev != 0 {
@@ -42,7 +42,7 @@ func (b *dupEncoder) EncodeIR(ctx *ctx) (irNode, error) {
 		dev = srcRegDev.HumanExpr
 
 		if addr != "" && dev != "" {
-			sb.WriteString(fmt.Sprintf(" device %s", dev))
+			sb.WriteString(fmt.Sprintf(" device %s", dev)) //nolint
 		}
 	}
 	return simpleIR(sb.String()), nil

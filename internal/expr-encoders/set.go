@@ -44,6 +44,7 @@ func (s *setIR) Format() string {
 }
 
 func (s *setIR) elemStrings() []string {
+	const ipv4Bits, ipv6Bits = 32, 128
 	if !s.Interval {
 		out := make([]string, 0, len(s.elems))
 		for _, e := range s.elems {
@@ -55,9 +56,9 @@ func (s *setIR) elemStrings() []string {
 	sorted := s.sortedElems()
 	switch s.KeyType {
 	case nftables.TypeIPAddr:
-		return intervalIPStrings(sorted, 32)
+		return intervalIPStrings(sorted, ipv4Bits)
 	case nftables.TypeIP6Addr:
-		return intervalIPStrings(sorted, 128)
+		return intervalIPStrings(sorted, ipv6Bits)
 	}
 
 	out := make([]string, 0, len(sorted))
@@ -130,7 +131,7 @@ func formatIPInterval(startKey []byte, end *nftables.SetElement, bits int) strin
 	}
 
 	bitLen := size.BitLen() - 1
-	pow := new(big.Int).Lsh(big.NewInt(1), uint(bitLen))
+	pow := new(big.Int).Lsh(big.NewInt(1), uint(bitLen)) //nolint:gosec
 	if size.Cmp(pow) == 0 && new(big.Int).Mod(startInt, size).Sign() == 0 {
 		return fmt.Sprintf("%s/%d", startIP, bits-bitLen)
 	}

@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type ruleEncFn func(*nftLib.Chain) ([]*nftenc.RuleEncoder, error)
-
 func newChainsCommand() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "chains",
